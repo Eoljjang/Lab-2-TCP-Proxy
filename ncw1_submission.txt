@@ -1,1 +1,14 @@
-Question 1:
+Question 1: 
+Intiailize the socket by calling socket.socket(socket.AF_INET, socket.SOCK_STREAM). The first argument specifies the IPV, and the second argument specifies the connection type. In this case it would be IPV4 with TCP connection.
+
+Question 2:
+
+Question 3:
+
+
+
+Question 4: We receive the address (IP) of the client (127.01.01.1 in this case) and the port of the client.
+
+Question 5:
+
+Question 6: 
