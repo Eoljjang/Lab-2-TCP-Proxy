@@ -10,40 +10,52 @@
 #!/usr/bin/env python3
 import socket
 import time
+from threading import Thread
 
 # 1) Define host, address & buffer size.
 HOST = "127.0.0.1" # (IP addr) equivalent to "localhost" -> Means this is your own PC.
 PORT = 8080
 BUFFER_SIZE = 1024
+BYTES_TO_READ = 4096
 
-def main():
-    # 2) Start server.
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    
-        # (question 3)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
-        # 2) Bind server to the IP & Port
-        s.bind((HOST, PORT))
-        # 3) Set to listening mode -> Continuously listen for client connections.
-        s.listen(2)
-        
+def handle_connection(conn, addr):
+    with conn:
+        print(f"Connected by{addr}")
         while True:
-            # 4) Accept client connection -> RECEIVES "conn" and "addr"
-            # - "conn" = Socket that refers to the client (like a client_ID)
-            # - "addr" = Address of the client [IP,Port]
+            data = conn.recv(BYTES_TO_READ) # Wait for request, and when you get it, receive it.
+            if not data: # If an empty byte string is received ==> b''
+                break
+            print(data)
+            conn.sendall(data) # Send data back to main client.
+
+def start_server():
+    # 2) Start server -> "with" handles all the connection closing, cleanup, etc. Without it, you'd have to close() connection manually.
+    # (it's a Python specific feature)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+
+        # 2.1) Bind server to the IP & Port
+        s.bind((HOST, PORT))
+    
+        # Make the port reusable (question 3)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.listen() # for incoming connections.
+        conn, addr = s.accept() # conn = socket referring to client, addr = address of client [IP, Port]
+        handle_connection(conn, addr) # Send client a response.
+
+# Start multithreaded echo server
+def start_threaded_server():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((HOST, PORT))
+
+        # setsockopt (set socket option) -> socket.SO_REUSEADDR = reuse address -> set to 1 (any other socket can bind to the client).
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        s.listen(2) # Allow backlog of up to 2 connections => queue [waiting conn1, waiting conn2]
+
+        # Allow the server to fork, and create threads for different connections.
+        while True:
             conn, addr = s.accept()
-            print("Connected by", addr)
-            
-            # 5) Recieve request from client. Wait a bit.
-            full_data = conn.recv(BUFFER_SIZE)
-            time.sleep(0.5)
+            thread = Thread(target=handle_connection, args=(conn, addr)) # Start a new thread per new connection.
+            thread.run()
 
-            # 6) Sends a response back to client.
-            conn.sendall(full_data)
-            conn.close()
-
-if __name__ == "__main__":
-    main()
-
-
+start_threaded_server()

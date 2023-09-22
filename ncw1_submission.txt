@@ -1,14 +1,11 @@
-Question 1: 
-Intiailize the socket by calling socket.socket(socket.AF_INET, socket.SOCK_STREAM). The first argument specifies the IPV, and the second argument specifies the connection type. In this case it would be IPV4 with TCP connection.
+Question 1: By specifing the second argument to be -> socket.socket(..., socket.SOCK_STREAM)
 
-Question 2:
+Question 2: The client socket intializes the connection, while the server socket listens for a connection. The client makes requests, and the server gives responses.
 
-Question 3:
-
-
+Question 3: You can reuse the same bind port by setting the socket option (s.setsockopt) to socket.SO_REUSEADDR and giving it a value of 1.
 
 Question 4: We receive the address (IP) of the client (127.01.01.1 in this case) and the port of the client.
 
-Question 5:
+Question 5: After the client is done sending the HTTP request, the server closes the connection and returns an empty byte string (client stops accepting data).
 
 Question 6: 
